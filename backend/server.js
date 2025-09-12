@@ -191,16 +191,21 @@ app.get(
   }
 );
 
-app.get("/api/products/:slug", [param("slug").isString()], handleValidation, async (req, res) => {
-  try {
-    const item = await Product.findOne({ slug: req.params.slug });
-    if (!item) return res.status(404).json({ message: "Product not found" });
-    res.json(item);
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ message: "Server error" });
+app.get(
+  "/api/products/:slug",
+  [param("slug").isString()],
+  handleValidation,
+  async (req, res) => {
+    try {
+      const item = await Product.findOne({ slug: req.params.slug });
+      if (!item) return res.status(404).json({ message: "Product not found" });
+      res.json(item);
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ message: "Server error" });
+    }
   }
-});
+);
 
 // Add product (admin only)
 app.post(
@@ -209,7 +214,13 @@ app.post(
   [
     body("name").notEmpty(),
     body("slug").isSlug(),
-    body("category").isIn(["import", "export", "chemicals", "coal", "supplies"]),
+    body("category").isIn([
+      "import",
+      "export",
+      "chemicals",
+      "coal",
+      "supplies",
+    ]),
   ],
   handleValidation,
   async (req, res) => {
@@ -356,6 +367,18 @@ app.use("/api/*", (req, res) =>
 );
 
 // =====================================
+// Catch-all for frontend
+// =====================================
+app.get("*", (req, res) => {
+  const indexFile = path.join(publicDir, "index.html");
+  if (fs.existsSync(indexFile)) {
+    res.sendFile(indexFile);
+  } else {
+    res.send("🚀 Sphinxi Backend API is running...");
+  }
+});
+
+// =====================================
 // Start Server
 // =====================================
 const start = async () => {
@@ -371,4 +394,5 @@ const start = async () => {
 };
 
 start();
+
 
